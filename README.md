@@ -41,4 +41,41 @@ Proyek ini menggunakan **Docker** agar lingkungan pengembangan dan eksekusi pipe
 ### **File Docker yang Digunakan**
 - **docker-compose.yml**  
   Mengatur service Airflow (scheduler, webserver, worker, postgres).
+  
+## 📊 Data Pipeline Flow 
+
+Sumber data pipeline berasal dari dua jenis data:
+
+1. **Database `db.sample`**  
+   → Diasumsikan sebagai database transaksi utama.  
+
+2. **File CSV dan Excel**  
+   → Sumber data pendukung yang turut diproses.
+
+Flow ETL dibangun menggunakan Python dan dijalankan melalui Airflow.  
+Alur lengkapnya sebagai berikut:
+
+1. **Extract (Python → Airflow)**  
+   - Mengambil data dari database `db.sample`.  
+   - Membaca file CSV dan Excel dari folder `DATA SOURCE/`.
+
+2. **Load ke STAGING**  
+   - Data hasil extract dimuat ke tabel staging.  
+   - Tahap ini hanya menyimpan data mentah yang sudah dibersihkan.
+
+3. **Transform & Load ke CORE (Warehouse)**  
+   - Python script memproses staging → core.  
+   - Pada tahap ini, data dibentuk menjadi struktur dimension dan fact.
+
+4. **Load ke MART**  
+   - Data mart hanya berisi 2 tabel utama:
+     - `mart.CustomerMart`
+     - `mart.DailySummaryMart`
+   - Tabel mart bersifat final dan siap dipakai untuk laporan.
+
+5. **Stored Procedure (SP)**  
+   - SP hanya mengambil data dari mart.  
+   - Tidak melakukan join atau transformasi berat karena semua proses telah dilakukan sebelumnya.  
+
+  
 
